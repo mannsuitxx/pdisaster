@@ -1,5 +1,5 @@
 const API_BASE_URL = 'http://localhost:5000/api';
-const PROD_URL = 'https://pdma-pulse.onrender.com/api'; // 👈 change if different
+const BASE_URL = 'https://pdisaster-8vys.onrender.com'; // 👈 change if different
 
 // Check if we're in production
 const isProduction = window.location.hostname !== 'localhost';
