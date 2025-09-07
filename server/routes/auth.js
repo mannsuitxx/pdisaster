@@ -34,7 +34,13 @@ router.post('/register', async (req, res) => {
     });
 
     const token = signToken(user);
-    return res.status(201).json({ token, user });
+
+    // ✅ Always send consistent JSON structure
+    return res.status(201).json({
+      message: 'Registration successful',
+      token,
+      user,
+    });
   } catch (err) {
     console.error('Register error:', err);
     return res.status(500).json({ error: 'Registration failed' });
@@ -55,7 +61,12 @@ router.post('/login', async (req, res) => {
     if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
 
     const token = signToken(user);
-    return res.json({ token, user });
+
+    return res.json({
+      message: 'Login successful',
+      token,
+      user,
+    });
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Login failed' });
@@ -81,7 +92,11 @@ router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ user });
+
+    res.json({
+      message: 'User fetched successfully',
+      user,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Failed to get user' });
   }
