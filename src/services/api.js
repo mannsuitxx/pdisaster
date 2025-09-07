@@ -1,7 +1,10 @@
-const API_BASE_URL = 'http://localhost:5000/api';
-const BASE_URL = 'https://pdisaster-8vys.onrender.com'; // 👈 change if different
+// src/services/api.js
 
-// Check if we're in production
+// Define your API base URLs
+const API_BASE_URL = 'http://localhost:5000/api';
+const PROD_URL = 'https://pdisaster-8vys.onrender.com/api';
+
+// Use correct URL depending on environment
 const isProduction = window.location.hostname !== 'localhost';
 const BASE_URL = isProduction ? PROD_URL : API_BASE_URL;
 
