@@ -11,7 +11,7 @@ function signToken(user) {
   return jwt.sign(payload, secret, { expiresIn: '24h' });
 }
 
-// Register
+// --- Register ---
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role = 'student', institution = '' } = req.body;
@@ -25,7 +25,13 @@ router.post('/register', async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email: email.toLowerCase(), password: hashed, role, institution });
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password: hashed,
+      role,
+      institution,
+    });
 
     const token = signToken(user);
     return res.status(201).json({ token, user });
@@ -35,11 +41,12 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login
+// --- Login ---
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+    if (!email || !password)
+      return res.status(400).json({ error: 'Email and password are required' });
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ error: 'Invalid credentials' });
@@ -55,7 +62,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Auth middleware
+// --- Auth middleware ---
 function auth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -69,7 +76,7 @@ function auth(req, res, next) {
   }
 }
 
-// Me
+// --- Me ---
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
