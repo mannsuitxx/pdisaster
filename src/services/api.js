@@ -39,11 +39,18 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+
+      // ✅ Safely parse JSON (avoid "Unexpected end of JSON input")
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null; // response had no body
+      }
 
       if (!response.ok) {
         console.error("API Response Error:", data);
-        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(data?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       return data;
@@ -62,7 +69,7 @@ class ApiService {
       method: 'POST',
       body: { email, password },
     });
-    this.setToken(data.token);
+    if (data?.token) this.setToken(data.token);
     return data;
   }
 
@@ -71,7 +78,7 @@ class ApiService {
       method: 'POST',
       body: userData,
     });
-    this.setToken(data.token);
+    if (data?.token) this.setToken(data.token);
     return data;
   }
 
