@@ -1,10 +1,11 @@
+// routes/auth.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 
-// Helper to sign JWT
+// --- Helper: sign JWT ---
 function signToken(user) {
   const payload = { userId: user._id, role: user.role };
   const secret = process.env.JWT_SECRET || 'fallback_secret';
@@ -15,6 +16,7 @@ function signToken(user) {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role = 'student', institution = '' } = req.body;
+
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email and password are required' });
     }
@@ -34,12 +36,12 @@ router.post('/register', async (req, res) => {
     });
 
     const token = signToken(user);
+    const safeUser = user.toJSON(); // uses schema method to hide password
 
-    // ✅ Always send consistent JSON structure
     return res.status(201).json({
       message: 'Registration successful',
       token,
-      user,
+      user: safeUser,
     });
   } catch (err) {
     console.error('Register error:', err);
@@ -51,8 +53,9 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
+    if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
+    }
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ error: 'Invalid credentials' });
@@ -61,11 +64,12 @@ router.post('/login', async (req, res) => {
     if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
 
     const token = signToken(user);
+    const safeUser = user.toJSON();
 
     return res.json({
       message: 'Login successful',
       token,
-      user,
+      user: safeUser,
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -78,6 +82,7 @@ function auth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token) return res.status(401).json({ error: 'Missing token' });
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
     req.user = decoded;
@@ -93,11 +98,10 @@ router.get('/me', auth, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    res.json({
-      message: 'User fetched successfully',
-      user,
-    });
+    const safeUser = user.toJSON();
+    res.json({ user: safeUser });
   } catch (err) {
+    console.error('Me error:', err);
     res.status(500).json({ error: 'Failed to get user' });
   }
 });
