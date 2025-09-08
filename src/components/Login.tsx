@@ -14,8 +14,15 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
-      await login(email, password);
+      const result = await login(email, password);
+
+      // ✅ make sure backend actually returned a user
+      if (!result?.user) {
+        throw new Error(result?.error || 'Invalid credentials');
+      }
+
       navigate('/dashboard');
     } catch (err: any) {
       setError(err?.message || 'Login failed');
