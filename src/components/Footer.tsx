@@ -79,7 +79,7 @@ const Footer: React.FC = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 text-gray-400 mb-4 md:mb-0">
-            <span>© 2024 SafeLearn India. All rights reserved.</span>
+            <span>© 2024 Pulse AI India. All rights reserved.</span>
             <Heart className="w-4 h-4 text-red-500" />
             <span>Made for safer schools</span>
           </div>
