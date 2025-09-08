@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Dashboard from './components/Dashboard';
-import LearningModules from './components/DrillDetail';
+import LearningModules from './components/LearningModules';
 import VirtualDrills from './components/VirtualDrills';
 import EmergencyContacts from './components/EmergencyContacts';
 import AdminPanel from './components/AdminPanel';
