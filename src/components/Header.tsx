@@ -72,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({
   Login
 </Link>
 <Link
-  to="/sign-up"
+  to="/signup"
   className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700"
 >
   Get Started
