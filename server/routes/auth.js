@@ -12,6 +12,17 @@ function signToken(user) {
   return jwt.sign(payload, secret, { expiresIn: '24h' });
 }
 
+// --- Helper: build safe user object ---
+function buildSafeUser(user) {
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    institution: user.institution,
+  };
+}
+
 // --- Register ---
 router.post('/register', async (req, res) => {
   try {
@@ -36,7 +47,7 @@ router.post('/register', async (req, res) => {
     });
 
     const token = signToken(user);
-    const safeUser = user.toJSON(); // uses schema method to hide password
+    const safeUser = buildSafeUser(user);
 
     return res.status(201).json({
       message: 'Registration successful',
@@ -44,7 +55,7 @@ router.post('/register', async (req, res) => {
       user: safeUser,
     });
   } catch (err) {
-    console.error('Register error:', err);
+    console.error('Register error:', err.message || err);
     return res.status(500).json({ error: 'Registration failed' });
   }
 });
@@ -64,7 +75,7 @@ router.post('/login', async (req, res) => {
     if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
 
     const token = signToken(user);
-    const safeUser = user.toJSON();
+    const safeUser = buildSafeUser(user);
 
     return res.json({
       message: 'Login successful',
@@ -72,7 +83,7 @@ router.post('/login', async (req, res) => {
       user: safeUser,
     });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('Login error:', err.message || err);
     return res.status(500).json({ error: 'Login failed' });
   }
 });
@@ -98,10 +109,10 @@ router.get('/me', auth, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const safeUser = user.toJSON();
+    const safeUser = buildSafeUser(user);
     res.json({ user: safeUser });
   } catch (err) {
-    console.error('Me error:', err);
+    console.error('Me error:', err.message || err);
     res.status(500).json({ error: 'Failed to get user' });
   }
 });
