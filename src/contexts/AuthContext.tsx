@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import apiService from '../services/api';
 
 interface User {
-  id: number;
+  id?: string;
+  _id?: string; // backend uses _id
   email: string;
   role: string;
   name: string;
@@ -34,40 +35,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
+    // On app load, check if token exists
     const token = localStorage.getItem('token');
     if (token) {
-      // In a real app, verify token with backend
-      setUser({
-        id: 1,
-        email: 'user@example.com',
-        role: 'student',
-        name: 'Demo User',
-        institution: 'Demo School'
-      });
+      apiService.me()
+        .then((data) => {
+          if (data?.user) setUser(data.user);
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          setUser(null);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await apiService.login(email, password);
+      if (!response || !response.user) {
+        throw new Error(response?.error || 'Login failed');
+      }
       setUser(response.user);
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const register = async (userData: any) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await apiService.register(userData);
+      if (!response || !response.user) {
+        throw new Error(response?.error || 'Registration failed');
+      }
       setUser(response.user);
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -79,14 +84,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      login,
-      register,
-      logout,
-      isAuthenticated: !!user
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
