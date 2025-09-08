@@ -1,63 +1,63 @@
 // src/services/api.js
 
-// Define your API base URLs
-const API_BASE_URL = 'http://localhost:5000/api';
-const PROD_URL = 'https://pdisaster-8vys.onrender.com/api';
+const API_BASE_URL = "http://localhost:5000/api";
+const PROD_URL = "https://pdisaster-8vys.onrender.com/api";
 
-// Use correct URL depending on environment
-const isProduction = window.location.hostname !== 'localhost';
+// Auto-select environment
+const isProduction = window.location.hostname !== "localhost";
 const BASE_URL = isProduction ? PROD_URL : API_BASE_URL;
 
 class ApiService {
   constructor() {
-    this.token = localStorage.getItem('token');
+    this.token = localStorage.getItem("token");
   }
 
   setToken(token) {
     this.token = token;
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
   }
 
   removeToken() {
     this.token = null;
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
   }
 
   async request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
     const config = {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...(this.token && { Authorization: `Bearer ${this.token}` }),
       },
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object') {
+    if (config.body && typeof config.body === "object") {
       config.body = JSON.stringify(config.body);
     }
 
     try {
       const response = await fetch(url, config);
 
-      // ✅ Safely parse JSON (avoid "Unexpected end of JSON input")
       let data = null;
       try {
         data = await response.json();
       } catch {
-        data = null; // response had no body
+        data = null; // no body
       }
 
       if (!response.ok) {
         console.error("API Response Error:", data);
-        throw new Error(data?.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          data?.error || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
       return data;
     } catch (error) {
-      console.error('API Error:', error);
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Network error. Please check your internet connection.');
+      console.error("API Error:", error);
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        throw new Error("Network error. Please check your connection.");
       }
       throw error;
     }
@@ -65,21 +65,21 @@ class ApiService {
 
   // ---------- Auth ----------
   async login(email, password) {
-    const data = await this.request('/auth/login', {
-      method: 'POST',
+    const data = await this.request("/auth/login", {
+      method: "POST",
       body: { email, password },
     });
     if (data?.token) this.setToken(data.token);
-    return data;
+    return data; // { message, token, user }
   }
 
   async register(userData) {
-    const data = await this.request('/auth/register', {
-      method: 'POST',
+    const data = await this.request("/auth/register", {
+      method: "POST",
       body: userData,
     });
     if (data?.token) this.setToken(data.token);
-    return data;
+    return data; // { message, token, user }
   }
 
   async logout() {
@@ -87,14 +87,13 @@ class ApiService {
   }
 
   async me() {
-    return this.request('/auth/me');
+    return this.request("/auth/me");
   }
 
   // ---------- Modules ----------
   async getModules(filters = {}) {
     const params = new URLSearchParams(filters);
-    const query = params.toString() ? `?${params}` : '';
-    return this.request(`/modules${query}`);
+    return this.request(`/modules${params.toString() ? `?${params}` : ""}`);
   }
 
   async getModule(id) {
@@ -103,7 +102,7 @@ class ApiService {
 
   async completeModule(id, data) {
     return this.request(`/modules/${id}/complete`, {
-      method: 'POST',
+      method: "POST",
       body: data,
     });
   }
@@ -111,8 +110,7 @@ class ApiService {
   // ---------- Games ----------
   async getGames(filters = {}) {
     const params = new URLSearchParams(filters);
-    const query = params.toString() ? `?${params}` : '';
-    return this.request(`/games${query}`);
+    return this.request(`/games${params.toString() ? `?${params}` : ""}`);
   }
 
   async getGame(id) {
@@ -121,7 +119,7 @@ class ApiService {
 
   async submitGameScore(id, scoreData) {
     return this.request(`/games/${id}/score`, {
-      method: 'POST',
+      method: "POST",
       body: scoreData,
     });
   }
@@ -132,7 +130,7 @@ class ApiService {
 
   // ---------- Drills ----------
   async getDrills() {
-    return this.request('/drills');
+    return this.request("/drills");
   }
 
   async getDrill(id) {
@@ -141,7 +139,7 @@ class ApiService {
 
   async completeDrill(id, data) {
     return this.request(`/drills/${id}/complete`, {
-      method: 'POST',
+      method: "POST",
       body: data,
     });
   }
@@ -149,17 +147,16 @@ class ApiService {
   // ---------- Emergency ----------
   async getEmergencyContacts(filters = {}) {
     const params = new URLSearchParams(filters);
-    const query = params.toString() ? `?${params}` : '';
-    return this.request(`/emergency/contacts${query}`);
+    return this.request(`/emergency/contacts${params.toString() ? `?${params}` : ""}`);
   }
 
-  async getDisasterAlerts(region = 'all') {
+  async getDisasterAlerts(region = "all") {
     return this.request(`/emergency/alerts?region=${region}`);
   }
 
   // ---------- Admin ----------
   async getAdminDashboard() {
-    return this.request('/admin/dashboard');
+    return this.request("/admin/dashboard");
   }
 
   async getAdminReports(type, period) {
@@ -167,8 +164,8 @@ class ApiService {
   }
 
   async scheduleDrill(drillData) {
-    return this.request('/admin/drills/schedule', {
-      method: 'POST',
+    return this.request("/admin/drills/schedule", {
+      method: "POST",
       body: drillData,
     });
   }
