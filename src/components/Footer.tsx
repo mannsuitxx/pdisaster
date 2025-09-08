@@ -13,8 +13,8 @@ const Footer: React.FC = () => {
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">SafeLearn India</h3>
-                <p className="text-sm text-gray-400">Building disaster-ready schools</p>
+                <h3 className="text-xl font-bold">PULSE AI</h3>
+                <p className="text-sm text-gray-400">Punjab Unified Life Safety & Emergency</p>
               </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
