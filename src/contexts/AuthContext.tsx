@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import apiService from '../services/api';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import apiService from "../services/api";
 
 interface User {
   id?: string;
@@ -13,8 +13,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
+  register: (userData: any) => Promise<any>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -25,41 +25,49 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => {},
   logout: () => {},
-  isAuthenticated: false
+  isAuthenticated: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // On app load, check if token exists
-    const token = localStorage.getItem('token');
-    if (token) {
-      apiService.me()
-        .then((data) => {
-          if (data?.user) setUser(data.user);
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
+    // Restore session on app load
+    const token = localStorage.getItem("token");
+    if (!token) {
       setLoading(false);
+      return;
     }
+
+    apiService
+      .me()
+      .then((data) => {
+        if (data?.user) {
+          setUser(data.user);
+        } else {
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem("token");
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await apiService.login(email, password);
-      if (!response || !response.user) {
-        throw new Error(response?.error || 'Login failed');
-      }
+      const response = await apiService.login(email, password); // { message, token, user }
+      if (!response?.user) throw new Error("Login failed");
       setUser(response.user);
+      return response;
     } finally {
       setLoading(false);
     }
@@ -68,11 +76,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: any) => {
     setLoading(true);
     try {
-      const response = await apiService.register(userData);
-      if (!response || !response.user) {
-        throw new Error(response?.error || 'Registration failed');
-      }
+      const response = await apiService.register(userData); // { message, token, user }
+      if (!response?.user) throw new Error("Registration failed");
       setUser(response.user);
+      return response;
     } finally {
       setLoading(false);
     }
