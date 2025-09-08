@@ -17,8 +17,15 @@ const Signup: React.FC = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
-      await register({ name, email, password, institution, role });
+      const result = await register({ name, email, password, institution, role });
+
+      // ✅ Check backend response before navigating
+      if (!result?.user) {
+        throw new Error(result?.error || 'Registration failed');
+      }
+
       navigate('/dashboard');
     } catch (err: any) {
       setError(err?.message || 'Registration failed');
